@@ -1,0 +1,17 @@
+#!/bin/bash
+imgpath=/var/lib/libvirt/images
+xmlpath=/etc/libvirt/qemu
+cecho(){
+	echo -e "\033[${2}m$1\033[0m"
+}
+read -p "请输入你要创建的域的名字： " img
+read -p "请输入你要创建的域的大小： " num
+if [ -e $imgpath/${img}.img ];then
+	cecho "$img 域已存在" 31
+	exit
+else
+	qemu-img create -f qcow2 -b ${imgpath}/node.qcow2  $imgpath/${img}.img $num &> /dev/null
+	sed "s/node/$img/" /root/nsd1812/node.xml > $xmlpath/${img}.xml
+	virsh define $xmlpath/${img}.xml &> /dev/null
+	cecho "域 $img 创建成功" 32
+fi
